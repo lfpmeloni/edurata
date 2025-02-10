@@ -30,6 +30,7 @@ steps:
       path: functions/get_job_description
     props:
       notion_page_id: ${inputs.notion_page_id}
+      notion_api_key: ${secrets.NOTION_API_KEY}
 
   extract-job-info:
     source:

@@ -1,20 +1,19 @@
 import os
 import requests
-from dotenv import load_dotenv
-
-load_dotenv()
-
-NOTION_API_KEY = os.getenv("NOTION_API_KEY")
 
 def handler(inputs):
+    NOTION_API_KEY = inputs.get("notion_api_key")  # Get API Key from workflow inputs
+    if not NOTION_API_KEY:
+        return {"error": "NOTION_API_KEY is missing. Ensure it's set in Edurata Secrets."}
+
     notion_page_id = inputs.get("notion_page_id")
+    if not notion_page_id:
+        return {"error": "notion_page_id is required but was not provided."}
+
     url = f"https://api.notion.com/v1/blocks/{notion_page_id}/children"
 
     # DEBUG LOGGING: Print first 5 characters of the key (DO NOT PRINT FULL KEY)
     print(f"Loaded NOTION_API_KEY: {NOTION_API_KEY[:5]}********")
-
-    if not NOTION_API_KEY:
-        return {"error": "NOTION_API_KEY is missing. Please set it in Edurata Secrets."}
 
     headers = {
         "Authorization": f"Bearer {NOTION_API_KEY}",
