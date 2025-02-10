@@ -1,0 +1,47 @@
+name: extract-job-info-to-edurata
+apiRevision: edurata.io/v1
+description: Extract job details from Notion and create a job card on Edurata.
+
+interface:
+  inputs:
+    properties:
+      notion_page_id:
+        type: string
+        description: "The Notion page ID containing the job description."
+  outputs:
+    properties:
+      job_info:
+        type: object
+        description: "Extracted job information as JSON."
+      edurata_card:
+        type: object
+        description: "Details of the created Edurata job card."
+
+steps:
+  get-job-description:
+    source:
+      repoUrl: "https://github.com/lfpmeloni/edurata"
+      path: functions/read_notion_page
+    props:
+      page_id: ${inputs.notion_page_id}
+
+  extract-job-info:
+    source:
+      repoUrl: "https://github.com/lfpmeloni/edurata"
+      path: functions/extract_job_info_gpt
+    props:
+      job_description: ${get-job-description.job_description}
+
+  create-edurata-card:
+    source:
+      repoUrl: "https://github.com/lfpmeloni/edurata"
+      path: functions/create_edurata_job_card
+    props:
+      Company Name: ${extract-job-info.Company Name}
+      Job Name: ${extract-job-info.Job Name}
+      Short Job Description: ${extract-job-info.Short Job Description}
+      Language: ${extract-job-info.Language}
+      Working Model: ${extract-job-info.Working Model}
+      Location: ${extract-job-info.Location}
+      Role: ${extract-job-info.Role}
+      Salary Expectation: ${extract-job-info.Salary Expectation}
