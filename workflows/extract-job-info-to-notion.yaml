@@ -12,7 +12,7 @@ interface:
       notion_database_id:
         type: string
         description: "The Notion database ID where the job card will be created."
-        default: "112e7e0f4b848136ad0dfd17eee073a3"
+        default: "10de7e0f4b84806eb89feef07cdb3ab2"
   outputs:
     properties:
       job_info:
@@ -24,49 +24,19 @@ interface:
 
 steps:
   get-job-description:
-    description: Retrieve the job description from the specified Notion page.
+    description: Retrieve the job description from Notion.
     source:
-      repoUrl: "https://github.com/Edurata/edurata-functions.git"
-      path: general/axios
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/get_job_description
     props:
-      method: GET
-      url: "https://api.notion.com/v1/blocks/${inputs.notion_page_id}/children"
-      headers:
-        Authorization: "Bearer ${secrets.NOTION_API_KEY}"
-        Notion-Version: "2022-06-28"
+      notion_page_id: ${inputs.notion_page_id}
 
   extract-job-info:
-    description: Extract job details using OpenAI GPT-3.5.
     source:
-      repoUrl: "https://github.com/Edurata/edurata-functions.git"
-      path: general/axios
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/extract_job_info
     props:
-      method: POST
-      url: "https://api.openai.com/v1/chat/completions"
-      headers:
-        Authorization: "Bearer ${secrets.OPENAI_API_KEY}"
-        Content-Type: "application/json"
-      data:
-        model: "gpt-3.5-turbo"
-        messages:
-          - role: "system"
-            content: |
-              You are an AI agent designed to extract key details from job descriptions. Based on the following job description, provide the information in JSON format with these fields:
-              - "Company Name": string
-              - "Job Name": string - Bring the complete name including field, if provided
-              - "Language": string (e.g., "English, German") - If multiple languages, separate by comma
-              - "Working Model": string (e.g., "Remote, Hybrid, Office") - If mentioned that hybrid or remote is possible, bring this possibility
-              - "Location": string (e.g., city name where office is based, "Remote" is not applicable)
-              - "Role": string (e.g., "Software Engineer", "Project Manager", "Developer")
-              - "Short Job Description": string (1-2 sentences summary)
-              - "Salary Expectation": number - without "" (salary expectation in euros per year, if unavailable make a guess based on seniority)
-
-              Job Description:
-              ${get-job-description.response.data.results[*].paragraph.rich_text[*].plain_text}
-
-              Respond in JSON format only.
-        temperature: 0.7
-        max_tokens: 500
+      job_description: ${get-job-description.job_description}
 
   get-current-iso-time:
     runtime: python3_10
@@ -79,54 +49,17 @@ steps:
           }
 
   create-notion-card:
-    description: Create a new job card in the specified Notion database.
     source:
-      repoUrl: "https://github.com/Edurata/edurata-functions.git"
-      path: general/axios
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/create_notion_card
     props:
-      method: POST
-      url: "https://api.notion.com/v1/pages"
-      headers:
-        Authorization: "Bearer ${secrets.NOTION_API_KEY}"
-        Notion-Version: "2022-06-28"
-        Content-Type: "application/json"
-      data:
-        parent:
-          database_id: ${inputs.notion_database_id}
-        properties:
-          "Company Name":
-            title:
-              - text:
-                  content: ${extract-job-info.response.data.choices[0].message.content.Company Name}
-          "Status":
-            status:
-              name: "Not applied"
-          "Date":
-            date:
-              start: ${get-current-iso-time.iso_time}
-          "Job Name":
-            rich_text:
-              - text:
-                  content: ${extract-job-info.response.data.choices[0].message.content.Job Name}
-          "Job Description":
-            rich_text:
-              - text:
-                  content: ${extract-job-info.response.data.choices[0].message.content.Short Job Description}
-          "Language":
-            rich_text:
-              - text:
-                  content: ${extract-job-info.response.data.choices[0].message.content.Language}
-          "Model":
-            rich_text:
-              - text:
-                  content: ${extract-job-info.response.data.choices[0].message.content.Working Model}
-          "Location":
-            rich_text:
-              - text:
-                  content: ${extract-job-info.response.data.choices[0].message.content.Location}
-          "Role":
-            rich_text:
-              - text:
-                  content: ${extract-job-info.response.data.choices[0].message.content.Role}
-          "Salary Expectation":
-            number: ${extract-job-info.response.data.choices[0].message.content.Salary Expectation}
+      notion_database_id: ${inputs.notion_database_id}
+      iso_time: ${get-current-iso-time.iso_time}
+      Company Name: ${extract-job-info.Company Name}
+      Job Name: ${extract-job-info.Job Name}
+      Short Job Description: ${extract-job-info.Short Job Description}
+      Language: ${extract-job-info.Language}
+      Working Model: ${extract-job-info.Working Model}
+      Location: ${extract-job-info.Location}
+      Role: ${extract-job-info.Role}
+      Salary Expectation: ${extract-job-info.Salary Expectation}
