@@ -2,7 +2,7 @@ import os
 import requests
 
 def handler(inputs):
-    NOTION_API_KEY = inputs.get("notion_api_key")  # Get API Key from workflow inputs
+    NOTION_API_KEY = inputs.get("notion_api_key")  # Get API Key from inputs
     if not NOTION_API_KEY:
         return {"error": "NOTION_API_KEY is missing. Ensure it's set in Edurata Secrets."}
 
@@ -11,9 +11,6 @@ def handler(inputs):
         return {"error": "notion_page_id is required but was not provided."}
 
     url = f"https://api.notion.com/v1/blocks/{notion_page_id}/children"
-
-    # DEBUG LOGGING: Print first 5 characters of the key (DO NOT PRINT FULL KEY)
-    print(f"Loaded NOTION_API_KEY: {NOTION_API_KEY[:5]}********")
 
     headers = {
         "Authorization": f"Bearer {NOTION_API_KEY}",
@@ -25,4 +22,18 @@ def handler(inputs):
     if response.status_code != 200:
         return {"error": f"Failed to fetch Notion page: {response.text}"}
 
-    return {"job_description": response.json()}
+    data = response.json()
+    blocks = data.get("results", [])
+    content = ""
+
+    # Extract text from blocks
+    for block in blocks:
+        block_type = block.get("type")
+        block_data = block.get(block_type, {})
+
+        if block_type in ["paragraph", "heading_1", "heading_2", "heading_3"]:
+            text_elements = block_data.get("rich_text", [])
+            text = "".join([part.get("plain_text", "") for part in text_elements])
+            content += text + " "
+
+    return {"job_description": content.strip() if content else "No text found"}

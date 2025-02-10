@@ -38,6 +38,8 @@ steps:
       path: functions/extract_job_info
     props:
       job_description: ${get-job-description.job_description}
+      openai_api_key: ${secrets.OPENAI_API_KEY}
+
 
   get-current-iso-time:
     runtime: python3_10
