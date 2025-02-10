@@ -12,7 +12,7 @@ interface:
       notion_database_id:
         type: string
         description: "The Notion database ID where the job card will be created."
-        default: "112e7e0f4b8481b7a288000cb2a8d439"
+        default: "112e7e0f4b848136ad0dfd17eee073a3"
   outputs:
     properties:
       job_info:
