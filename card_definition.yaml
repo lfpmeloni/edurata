@@ -1,0 +1,76 @@
+name: extract-job-info-to-edurata
+apiRevision: edurata.io/v1
+description: Workflow to read a job description from Notion, extract job details using GPT-3.5, and create a job card on Edurata.
+
+interface:
+  inputs:
+    properties:
+      notion_page_id:
+        type: string
+        description: "The Notion page ID containing the job description."
+  outputs:
+    properties:
+      job_info:
+        type: object
+        description: "Extracted job information as JSON."
+      edurata_card:
+        type: object
+        description: "Details of the created Edurata job card."
+
+steps:
+  get-job-description:
+    description: Retrieve the job description from the specified Notion page.
+    source:
+      repoUrl: "https://github.com/Edurata/edurata-functions.git"
+      path: general/axios
+    props:
+      method: GET
+      url: "https://api.notion.com/v1/blocks/${inputs.notion_page_id}/children"
+      headers:
+        Authorization: "Bearer ${secrets.NOTION_API_KEY}"
+        Notion-Version: "2022-06-28"
+
+  extract-job-info:
+    description: Extract job details using OpenAI GPT-3.5.
+    source:
+      repoUrl: "https://github.com/Edurata/edurata-functions.git"
+      path: general/axios
+    props:
+      method: POST
+      url: "https://api.openai.com/v1/chat/completions"
+      headers:
+        Authorization: "Bearer ${secrets.OPENAI_API_KEY}"
+        Content-Type: "application/json"
+      data:
+        model: "gpt-3.5-turbo"
+        messages:
+          - role: "system"
+            content: |
+              You are an AI agent designed to extract key details from job descriptions...
+              Job Description:
+              ${get-job-description.response.data.results[*].paragraph.rich_text[*].plain_text}
+        temperature: 0.7
+        max_tokens: 500
+
+  create-edurata-card:
+    description: Create a new job card in Edurata.
+    source:
+      repoUrl: "https://github.com/Edurata/edurata-functions.git"
+      path: general/axios
+    props:
+      method: POST
+      url: "https://api.edurata.io/v1/jobs"
+      headers:
+        Authorization: "Bearer ${secrets.EDURATA_API_KEY}"
+        Content-Type: "application/json"
+      data:
+        company_name: ${extract-job-info.response.data.choices[0].message.content.Company Name}
+        job_name: ${extract-job-info.response.data.choices[0].message.content.Job Name}
+        status: "Not applied"
+        date: ${time.now}
+        short_description: ${extract-job-info.response.data.choices[0].message.content.Short Job Description}
+        language: ${extract-job-info.response.data.choices[0].message.content.Language}
+        working_model: ${extract-job-info.response.data.choices[0].message.content.Working Model}
+        location: ${extract-job-info.response.data.choices[0].message.content.Location}
+        role: ${extract-job-info.response.data.choices[0].message.content.Role}
+        salary_expectation: ${extract-job-info.response.data.choices[0].message.content.Salary Expectation}
