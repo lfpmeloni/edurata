@@ -66,6 +66,16 @@ steps:
         temperature: 0.7
         max_tokens: 500
 
+  get-current-iso-time:
+    runtime: python3_10
+    code: |
+      import datetime
+
+      def handler(inputs):
+          return {
+              "iso_time": datetime.datetime.now().isoformat()
+          }
+
   create-notion-card:
     description: Create a new job card in the specified Notion database.
     source:
@@ -91,7 +101,7 @@ steps:
               name: "Not applied"
           "Date":
             date:
-              start: ${time.now}
+              start: ${get-current-time.iso_time}
           "Job Name":
             rich_text:
               - text:
