@@ -54,5 +54,8 @@ def handler(inputs):
     
     if response.status_code != 200:
         return {"error": f"Failed to create Notion card: {response.text}"}
+    
+    notion_card = response.json()
+    print(f"Successfully created Notion Card: {notion_card}")
 
-    return {"notion_card": response.json()}
+    return {"notion_card": notion_card}  # This ensures the workflow has an output

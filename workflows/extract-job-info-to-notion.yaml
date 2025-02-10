@@ -20,7 +20,7 @@ interface:
         description: "Extracted job information as JSON."
       notion_card:
         type: object
-        description: "Details of the created Notion card."
+        description: "The Notion card that was created."
 
 steps:
   get-job-description:
