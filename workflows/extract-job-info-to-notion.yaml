@@ -55,6 +55,7 @@ steps:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
       path: functions/create_notion_card
     props:
+      notion_api_key: ${secrets.NOTION_API_KEY}
       notion_database_id: ${inputs.notion_database_id}
       iso_time: ${get-current-iso-time.iso_time}
       company_name: ${extract-job-info.job_info.company_name}
