@@ -61,6 +61,7 @@ steps:
       company_name: ${extract-job-info.job_info.company_name}
       job_name: ${extract-job-info.job_info.job_name}
       short_job_description: ${extract-job-info.job_info.short_job_description}
+      language: ${extract-job-info.job_info.language} 
       language: ${extract-job-info.job_info.language}
       working_model: ${extract-job-info.job_info.working_model}
       location: ${extract-job-info.job_info.location}
