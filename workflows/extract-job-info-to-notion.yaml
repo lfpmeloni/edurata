@@ -55,11 +55,11 @@ steps:
     props:
       notion_database_id: ${inputs.notion_database_id}
       iso_time: ${get-current-iso-time.iso_time}
-      Company Name: ${extract-job-info.Company Name}
-      Job Name: ${extract-job-info.Job Name}
-      Short Job Description: ${extract-job-info.Short Job Description}
-      Language: ${extract-job-info.Language}
-      Working Model: ${extract-job-info.Working Model}
-      Location: ${extract-job-info.Location}
-      Role: ${extract-job-info.Role}
-      Salary Expectation: ${extract-job-info.Salary Expectation}
+      company_name: ${extract-job-info.Company_Name}
+      job_name: ${extract-job-info.Job_Name}
+      short_job_description: ${extract-job-info.Short_Job_Description}
+      language: ${extract-job-info.Language}
+      working_model: ${extract-job-info.Working_Model}
+      location: ${extract-job-info.Location}
+      role: ${extract-job-info.Role}
+      salary_expectation: ${extract-job-info.Salary_Expectation}

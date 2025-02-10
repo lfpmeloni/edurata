@@ -13,14 +13,14 @@ def handler(inputs):
 
     prompt = f"""
     You are an AI that extracts job details. Provide JSON output with these keys:
-    - "Company Name"
-    - "Job Name"
-    - "Language"
-    - "Working Model"
-    - "Location"
-    - "Role"
-    - "Short Job Description"
-    - "Salary Expectation"
+    - "company_name"
+    - "job_name"
+    - "language"
+    - "working_model"
+    - "location"
+    - "role"
+    - "short_job_description"
+    - "salary_expectation"
 
     Job Description:
     {job_description}
@@ -36,6 +36,7 @@ def handler(inputs):
     )
 
     try:
-        return json.loads(response['choices'][0]['message']['content'])
+        content = response['choices'][0]['message']['content']
+        return json.loads(content)  # Ensure valid JSON response
     except Exception as e:
         return {"error": f"Failed to parse GPT response: {str(e)}"}
