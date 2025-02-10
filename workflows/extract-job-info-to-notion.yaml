@@ -101,7 +101,7 @@ steps:
               name: "Not applied"
           "Date":
             date:
-              start: ${get-current-time.iso_time}
+              start: ${get-current-iso-time.iso_time}
           "Job Name":
             rich_text:
               - text:
