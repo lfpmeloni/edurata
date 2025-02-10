@@ -17,7 +17,13 @@ def handler(inputs):
     working_model = inputs.get("working_model", "Unknown")
     location = inputs.get("location", "Unknown")
     role = inputs.get("role", "Unknown")
-    salary_expectation = inputs.get("salary_expectation", 0)
+
+    # Convert salary expectation to a number or null
+    try:
+        salary_expectation = float(inputs.get("salary_expectation", 0))
+    except ValueError:
+        salary_expectation = None  # If not numeric, store as None
+    
     iso_time = inputs.get("iso_time", None)
 
     data = {
@@ -28,7 +34,7 @@ def handler(inputs):
             "Date": {"date": {"start": iso_time} if iso_time else None},
             "Job Name": {"rich_text": [{"text": {"content": job_name}}]},
             "Job Description": {"rich_text": [{"text": {"content": short_description}}]},
-            "Language": {"rich_text": [{"text": {"content": language}}]}, 
+            "Language": {"rich_text": [{"text": {"content": language}}]},
             "Working Model": {"rich_text": [{"text": {"content": working_model}}]},
             "Location": {"rich_text": [{"text": {"content": location}}]},
             "Role": {"rich_text": [{"text": {"content": role}}]},
@@ -42,7 +48,6 @@ def handler(inputs):
         "Content-Type": "application/json"
     }
 
-    # Log the payload before sending
     print("Payload Sent to Notion API:", json.dumps(data, indent=4))
 
     response = requests.post("https://api.notion.com/v1/pages", json=data, headers=headers)
