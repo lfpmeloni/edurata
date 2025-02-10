@@ -65,5 +65,4 @@ steps:
       working_model: ${extract-job-info.job_info.working_model}
       location: ${extract-job-info.job_info.location}
       role: ${extract-job-info.job_info.role}
-      salary_expectation: >
-        ${extract-job-info.job_info.salary_expectation == "Not specified" ? null : extract-job-info.job_info.salary_expectation}
+      salary_expectation: ${extract-job-info.job_info.salary_expectation}

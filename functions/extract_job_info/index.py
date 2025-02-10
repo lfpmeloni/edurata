@@ -19,7 +19,7 @@ def handler(inputs):
     - "location": string
     - "role": string
     - "short_job_description": string
-    - "salary_expectation": number - if not specified return an anual estimate
+    - "salary_expectation": number - without "" (salary expectation in euros per year, if unavailable make a guess based on seniority)
 
     Job Description:
     {job_description}
