@@ -1,0 +1,58 @@
+name: generate-blog-posts-from-airtable
+apiRevision: edurata.io/workflow/v1
+description: This workflow retrieves unprocessed blog posts from Airtable, generates blog content using OpenAI GPT, and updates the Airtable record with the generated content.
+
+interface:
+  inputs:
+    type: object
+    properties:
+      airtable_base_id:
+        type: string
+        description: "The Airtable Base ID"
+        default: "appHMoJQ7Wlrx7pR6"
+      airtable_table_id:
+        type: string
+        description: "The Airtable Table ID"
+        default: "tblQOHK14nU4Rkw1j"
+steps:
+  get-unprocessed-blogs:
+    description: Fetch unprocessed blog posts from Airtable.
+    source:
+      repoUrl: "<TODO>"
+      path: general/axios
+    props:
+      method: GET
+      url: "https://api.airtable.com/v0/${inputs.airtable_base_id}/${inputs.airtable_table_id}"
+      headers:
+        Authorization: "Bearer ${secrets.AIRTABLE_API_KEY}"
+      params:
+        filterByFormula: "AND({Status}='unprocessed')"
+        maxRecords: 10
+
+  generate-blog-content:
+    foreach: ${get-unprocessed-blogs.response.data.records}
+    description: Generate a professional blog post from raw content using OpenAI GPT.
+    source:
+      repoUrl: "<TODO>"
+      path: etl/transform/chatgpt
+    props:
+      API_KEY: ${secrets.OPENAI_API_KEY}
+      systemMessage: |
+        You are an AI that generates professional, structured blog posts from raw content. 
+      message: ${each.fields.Raw Content}
+
+  update-airtable:
+    foreach: ${get-unprocessed-blogs.response.data.records}
+    description: Update Airtable with generated blog content.
+    source:
+      repoUrl: "<TODO>"
+      path: general/axios
+    props:
+      method: PATCH
+      url: "https://api.airtable.com/v0/${inputs.airtable_base_id}/${inputs.airtable_table_id}/${each.id}"
+      headers:
+        Authorization: "Bearer ${secrets.AIRTABLE_API_KEY}"
+      body:
+        fields:
+          Generated Content: ${generate-blog-content.response}
+          Status: "processed"
