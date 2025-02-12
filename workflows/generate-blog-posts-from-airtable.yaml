@@ -14,45 +14,37 @@ interface:
         type: string
         description: "The Airtable Table ID"
         default: "tblQOHK14nU4Rkw1j"
+
 steps:
   get-unprocessed-blogs:
     description: Fetch unprocessed blog posts from Airtable.
     source:
-      repoUrl: "<TODO>"
-      path: general/axios
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/etl/extract/fetch_airtable_posts
     props:
-      method: GET
-      url: "https://api.airtable.com/v0/${inputs.airtable_base_id}/${inputs.airtable_table_id}"
-      headers:
-        Authorization: "Bearer ${secrets.AIRTABLE_API_KEY}"
-      params:
-        filterByFormula: "AND({Status}='unprocessed')"
-        maxRecords: 10
+      airtable_base_id: ${inputs.airtable_base_id}
+      airtable_table_id: ${inputs.airtable_table_id}
+      airtable_api_key: ${secrets.AIRTABLE_API_KEY}
 
   generate-blog-content:
     foreach: ${get-unprocessed-blogs.response.data.records}
     description: Generate a professional blog post from raw content using OpenAI GPT.
     source:
-      repoUrl: "<TODO>"
-      path: etl/transform/chatgpt
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/etl/transform/generate_gpt_content
     props:
-      API_KEY: ${secrets.OPENAI_API_KEY}
-      systemMessage: |
-        You are an AI that generates professional, structured blog posts from raw content. 
-      message: ${each.fields.Raw Content}
+      openai_api_key: ${secrets.OPENAI_API_KEY}
+      raw_content: ${each.fields.Raw Content}
 
   update-airtable:
     foreach: ${get-unprocessed-blogs.response.data.records}
     description: Update Airtable with generated blog content.
     source:
-      repoUrl: "<TODO>"
-      path: general/axios
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/etl/load/update_airtable_record
     props:
-      method: PATCH
-      url: "https://api.airtable.com/v0/${inputs.airtable_base_id}/${inputs.airtable_table_id}/${each.id}"
-      headers:
-        Authorization: "Bearer ${secrets.AIRTABLE_API_KEY}"
-      body:
-        fields:
-          Generated Content: ${generate-blog-content.response}
-          Status: "processed"
+      airtable_base_id: ${inputs.airtable_base_id}
+      airtable_table_id: ${inputs.airtable_table_id}
+      record_id: ${each.id}
+      generated_content: ${generate-blog-content.response}
+      airtable_api_key: ${secrets.AIRTABLE_API_KEY}
