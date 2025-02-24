@@ -28,16 +28,24 @@ steps:
 
   generate-blog-content:
     foreach: ${get-unprocessed-blogs.records}
-    description: Generate a professional blog post from raw content using OpenAI GPT.
+    description: Generate a professional blog post using OpenAI GPT.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
       path: functions/etl/transform/generate_gpt_content
     props:
       openai_api_key: ${secrets.OPENAI_API_KEY}
       raw_content: ${each.fields.Raw Content}
+      record_id: ${each.id}
+      model: "gpt-4"
+      temperature: 0.7
+      messages:
+        - role: "system"
+          content: "You are an AI that generates professional blog posts from raw content."
+        - role: "user"
+          content: "Generate a well-structured, engaging blog post from this content:\n\n${each.fields.Raw Content}"
 
   update-airtable:
-    foreach: ${get-unprocessed-blogs.records}
+    foreach: ${generate-blog-content}
     description: Update Airtable with generated blog content.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
@@ -46,5 +54,5 @@ steps:
       airtable_base_id: ${inputs.airtable_base_id}
       airtable_table_id: ${inputs.airtable_table_id}
       record_id: ${each.id}
-      generated_content: ${generate-blog-content[?(@.id == each.id)].generated_content}
+      generated_content: ${each.generated_content}
       airtable_api_key: ${secrets.AIRTABLE_API_KEY}

@@ -1,31 +1,40 @@
 import openai
 
 def handler(inputs):
-    # Fetch API key from inputs
+    # Fetch API key
     api_key = inputs.get("openai_api_key")
     if not api_key:
         return {"error": "OPENAI_API_KEY is missing. Ensure it's set in Edurata Secrets."}
 
-    # Fetch raw content
+    # Fetch required inputs
     raw_content = inputs.get("raw_content")
+    record_id = inputs.get("record_id")
+    messages = inputs.get("messages")  # Dynamic message prompt
+    model = inputs.get("model", "gpt-4")  # Default to GPT-4
+    temperature = inputs.get("temperature", 0.7)  # Default temperature
+
     if not raw_content:
         return {"error": "raw_content is missing."}
+    if not record_id:
+        return {"error": "record_id is missing."}
+    if not messages:
+        return {"error": "messages array is missing."}
 
     try:
-        # Initialize OpenAI Client (NEW way)
+        # Initialize OpenAI client
         client = openai.OpenAI(api_key=api_key)
 
         # Call OpenAI API
         response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are an AI that generates professional blog posts from raw content."},
-                {"role": "user", "content": f"Generate a well-structured, engaging blog post from this content:\n\n{raw_content}"}
-            ],
-            temperature=0.7
+            model=model,
+            messages=messages,
+            temperature=temperature
         )
 
-        return {"generated_content": response.choices[0].message.content}
+        return {
+            "id": record_id,  # Return ID for mapping
+            "generated_content": response.choices[0].message.content
+        }
 
     except openai.OpenAIError as e:
         return {"error": f"OpenAI API error: {str(e)}"}
