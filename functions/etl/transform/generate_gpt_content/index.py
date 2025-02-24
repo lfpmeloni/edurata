@@ -25,7 +25,5 @@ def handler(inputs):
 
         return {"generated_content": response["choices"][0]["message"]["content"]}
 
-    except openai.error.OpenAIError as e:
-        return {"error": f"OpenAI API error: {str(e)}"}
     except Exception as e:
         return {"error": f"Unexpected error: {str(e)}"}

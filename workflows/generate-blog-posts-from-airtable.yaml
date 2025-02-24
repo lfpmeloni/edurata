@@ -27,7 +27,7 @@ steps:
       airtable_api_key: ${secrets.AIRTABLE_API_KEY}
 
   generate-blog-content:
-    foreach: ${get-unprocessed-blogs.response.data.records}
+    foreach: ${get-unprocessed-blogs.records}
     description: Generate a professional blog post from raw content using OpenAI GPT.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
