@@ -12,9 +12,11 @@ def handler(inputs):
         return {"error": "raw_content is missing."}
 
     try:
+        # Initialize OpenAI Client (NEW way)
+        client = openai.OpenAI(api_key=api_key)
+
         # Call OpenAI API
-        openai.api_key = api_key
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are an AI that generates professional blog posts from raw content."},
@@ -23,7 +25,9 @@ def handler(inputs):
             temperature=0.7
         )
 
-        return {"generated_content": response["choices"][0]["message"]["content"]}
+        return {"generated_content": response.choices[0].message.content}
 
+    except openai.OpenAIError as e:
+        return {"error": f"OpenAI API error: {str(e)}"}
     except Exception as e:
         return {"error": f"Unexpected error: {str(e)}"}
