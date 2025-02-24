@@ -37,7 +37,7 @@ steps:
       raw_content: ${each.fields.Raw Content}
 
   update-airtable:
-    foreach: ${get-unprocessed-blogs.response.data.records}
+    foreach: ${get-unprocessed-blogs.records}
     description: Update Airtable with generated blog content.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
@@ -46,5 +46,5 @@ steps:
       airtable_base_id: ${inputs.airtable_base_id}
       airtable_table_id: ${inputs.airtable_table_id}
       record_id: ${each.id}
-      generated_content: ${generate-blog-content.response}
+      generated_content: ${generate-blog-content[each.__index__].generated_content}
       airtable_api_key: ${secrets.AIRTABLE_API_KEY}
