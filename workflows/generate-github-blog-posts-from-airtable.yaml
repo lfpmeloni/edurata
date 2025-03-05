@@ -1,0 +1,85 @@
+name: generate-blog-posts-from-workflows
+apiRevision: edurata.io/workflow/v1
+description: |
+  This workflow retrieves unprocessed workflows from an Airtable table, extracts the workflow YAML from a GitHub link, generates blog content, and stores it in an Airtable table.
+
+interface:
+  inputs:
+    type: object
+    properties:
+      workflows_table_id:
+        type: string
+        description: "The Airtable ID containing workflow entries."
+        default: "appHMoJQ7Wlrx7pR6"
+      github_source_table_id:
+        type: string
+        description: "The table ID containing GitHub workflow links."
+        default: "tblBDM5qwHMiH5AiY"
+      github_posts_table_id:
+        type: string
+        description: "The table ID where blog posts are stored."
+        default: "tbl6zYqjJXue0tzUk"
+
+steps:
+  get-unprocessed-workflows:
+    description: Fetch unprocessed workflows from Airtable.
+    source:
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/etl/extract/fetch_airtable_posts
+    props:
+      airtable_base_id: ${inputs.workflows_table_id}
+      airtable_table_id: ${inputs.github_source_table_id}
+      airtable_api_key: ${secrets.AIRTABLE_API_KEY}
+
+  fetch-workflow-yaml:
+    foreach: ${get-unprocessed-workflows.records}
+    description: Extract the raw YAML content from the GitHub workflow link.
+    source:
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/etl/extract/fetch_github_yaml
+    props:
+      github_repo_url: ${each.fields.githubRepoURL}
+      workflow_path: ${each.fields.workflowPath}
+
+  generate-blog-content:
+    foreach: ${fetch-workflow-yaml}
+    description: Generate structured blog content about the workflow.
+    source:
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/etl/transform/generate_gpt_content
+    props:
+      openai_api_key: ${secrets.OPENAI_API_KEY}
+      record_id: ${each.id}
+      model: "gpt-4"
+      temperature: 0.7
+      messages:
+        - role: "system"
+          content: "You are an AI that generates professional blog posts from workflow YAML files."
+        - role: "user"
+          content: "Generate a blog post describing the following workflow:\n\n${each.yaml_content}"
+
+  store-blog-post:
+    foreach: ${generate-blog-content}
+    description: Store the generated blog content in Airtable.
+    source:
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/etl/load/update_airtable_record
+    props:
+      airtable_base_id: ${inputs.workflows_table_id}
+      airtable_table_id: ${inputs.github_posts_table_id}
+      record_id: ${each.id}
+      generated_content: ${each.generated_content}
+      airtable_api_key: ${secrets.AIRTABLE_API_KEY}
+
+  mark-workflow-as-processed:
+    foreach: ${generate-blog-content}
+    description: Mark the workflow as processed after generating blog content.
+    source:
+      repoUrl: "https://github.com/lfpmeloni/edurata.git"
+      path: functions/etl/load/update_airtable_record
+    props:
+      airtable_base_id: ${inputs.workflows_table_id}
+      airtable_table_id: ${inputs.github_source_table_id}
+      record_id: ${each.id}
+      processed: true
+      airtable_api_key: ${secrets.AIRTABLE_API_KEY}
