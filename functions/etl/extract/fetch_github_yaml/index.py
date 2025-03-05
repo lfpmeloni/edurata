@@ -36,4 +36,4 @@ def handler(inputs):
         }
 
     except Exception as e:
-        return {"error": f"Unexpected error: {str(e)}"}
+        return {"error": f"Unexpected Error: {str(e)}"}
