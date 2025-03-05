@@ -1,4 +1,4 @@
-name: generate-blog-posts-from-workflows
+name: generate-github-blog-posts-from-airtable
 apiRevision: edurata.io/workflow/v1
 description: |
   This workflow retrieves unprocessed workflows from an Airtable table, extracts the workflow YAML from a GitHub link, generates blog content, and stores it in an Airtable table.

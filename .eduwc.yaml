@@ -1,1 +1,3 @@
 workflows/extract-job-info-to-notion.yaml
+workflows/generate-blog-posts-from-airtable.yaml
+workflows/generate-github-blog-posts-from-airtable.yaml
