@@ -41,22 +41,57 @@ steps:
       repoUrl: ${each.fields.githubRepoURL}
       path: ${each.fields.workflowPath}
 
-  generate-blog-content:
+  get-workflow-definition:
     foreach: ${clone-git}
+    description: Extract the workflow YAML content from the cloned repository.
+    runtime: python3_10
+    interface:
+      inputs:
+        properties:
+          repoCode:
+            type: file
+            description: The path to the cloned repository.
+      outputs:
+        properties:
+          workflow_content:
+            type: string
+            description: Extracted YAML content from the workflow file.
+    packages:
+      PyYAML: ''
+    code: |
+      import yaml
+
+      def handler(inputs):
+          repo_path = inputs["repoCode"]
+
+          try:
+              with open(repo_path, 'r') as file:
+                  yaml_content = file.read()
+                  parsed_yaml = yaml.safe_load(yaml_content)
+
+              return {"workflow_content": yaml_content}
+
+          except Exception as e:
+              return {"error": f"Failed to read workflow YAML: {str(e)}"}
+    props:
+      repoCode: ${each.repoCode}
+
+  generate-blog-content:
+    foreach: ${get-workflow-definition}
     description: Generate structured blog content about the workflow.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
       path: functions/etl/transform/generate_gpt_content
     props:
       openai_api_key: ${secrets.OPENAI_API_KEY}
-      repoCode: ${each.repoCode}
+      raw_content: ${each.workflow_content}
       model: "gpt-4"
       temperature: 0.7
       messages:
         - role: "system"
           content: "You are an AI that generates professional blog posts from workflow YAML files."
         - role: "user"
-          content: "Generate a blog post describing the following workflow:\n\n${each.repoCode}"
+          content: "Generate a blog post describing the following workflow:\n\n${each.workflow_content}"
 
   store-blog-post:
     foreach: ${generate-blog-content}
