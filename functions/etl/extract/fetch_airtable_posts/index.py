@@ -1,7 +1,7 @@
 import requests
 
 def handler(inputs):
-    # Fetch API Key from inputs to ensure it's passed correctly
+    # Fetch API Key from inputs
     api_key = inputs.get("airtable_api_key")
     if not api_key:
         return {"error": "AIRTABLE_API_KEY is missing. Ensure it is set in Edurata Secrets."}
@@ -41,10 +41,22 @@ def handler(inputs):
         return {"error": f"Airtable API error {response.status_code}: {response.text}"}
 
     # Extract records
-    records = response.json().get("records", [])
+    all_records = response.json().get("records", [])
 
-    # If no records found, return an empty array
-    if not records:
-        return {"message": "No unprocessed records found", "records": []}
+    # **Filter out records missing required fields**
+    filtered_records = []
+    for record in all_records:
+        fields = record.get("fields", {})
+        github_repo_url = fields.get("githubRepoURL")
+        workflow_path = fields.get("workflowPath")
 
-    return {"records": records}
+        if github_repo_url and workflow_path:
+            filtered_records.append(record)
+        else:
+            print(f"⚠️ Skipping record {record.get('id')} - Missing required fields.")
+
+    # If no valid records found, return an empty array
+    if not filtered_records:
+        return {"message": "No valid unprocessed records found", "records": []}
+
+    return {"records": filtered_records}
