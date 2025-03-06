@@ -49,14 +49,14 @@ steps:
       path: functions/etl/transform/generate_gpt_content
     props:
       openai_api_key: ${secrets.OPENAI_API_KEY}
-      record_id: ${each.id}
+      repoCode: ${each.repoCode}
       model: "gpt-4"
       temperature: 0.7
       messages:
         - role: "system"
           content: "You are an AI that generates professional blog posts from workflow YAML files."
         - role: "user"
-          content: "Generate a blog post describing the following workflow:\n\n${each.yaml_content}"
+          content: "Generate a blog post describing the following workflow:\n\n${each.repoCode}"
 
   store-blog-post:
     foreach: ${generate-blog-content}
