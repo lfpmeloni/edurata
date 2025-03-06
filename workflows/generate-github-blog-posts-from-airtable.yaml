@@ -46,7 +46,7 @@ steps:
     description: Extract the workflow YAML content from the cloned repository.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
-      path: functions/etl/extract/get_workflow_yaml
+      path: functions/etl/extract
     props:
       repoCode: ${each.repoCode}
 
