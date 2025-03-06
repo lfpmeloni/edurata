@@ -57,12 +57,17 @@ steps:
             type: string
             description: Extracted YAML content from the workflow file.
     packages:
+      pip: ''
       PyYAML: ''
     code: |
       import yaml
+      import os
 
       def handler(inputs):
           repo_path = inputs["repoCode"]
+
+          if not os.path.exists(repo_path):
+              return {"error": f"File not found: {repo_path}"}
 
           try:
               with open(repo_path, 'r') as file:
@@ -71,13 +76,17 @@ steps:
 
               return {"workflow_content": yaml_content}
 
+          except yaml.YAMLError as e:
+              return {"error": f"Failed to parse YAML: {str(e)}"}
           except Exception as e:
-              return {"error": f"Failed to read workflow YAML: {str(e)}"}
+              return {"error": f"Unexpected error: {str(e)}"}
     props:
       repoCode: ${each.repoCode}
 
   generate-blog-content:
     foreach: ${get-workflow-definition}
+    if:
+      "!!": ${each.workflow_content}
     description: Generate structured blog content about the workflow.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
@@ -92,6 +101,7 @@ steps:
           content: "You are an AI that generates professional blog posts from workflow YAML files."
         - role: "user"
           content: "Generate a blog post describing the following workflow:\n\n${each.workflow_content}"
+
 
   store-blog-post:
     foreach: ${generate-blog-content}
