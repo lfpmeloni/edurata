@@ -33,7 +33,6 @@ steps:
 
   clone-git:
     foreach: ${get-unprocessed-workflows.records}
-    if: "${each.fields.githubRepoURL} != '' && ${each.fields.workflowPath} != ''"
     description: Clone the GitHub repository from the workflow path.
     source:
       repoUrl: "https://github.com/Edurata/edurata-functions.git"
