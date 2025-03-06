@@ -19,11 +19,13 @@ def handler(inputs):
     # Airtable API request
     url = f"https://api.airtable.com/v0/{airtable_base_id}/{airtable_table_id}"
     headers = {
-        "Authorization": f"Bearer {api_key}",  # Ensure correct header format
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
+
+    # **Filter for missing OR explicitly FALSE `processed` values**
     params = {
-        "filterByFormula": "AND({Status}='unprocessed')",
+        "filterByFormula": "OR(NOT({processed}), {processed} = FALSE())",
         "maxRecords": 10
     }
 
@@ -38,4 +40,11 @@ def handler(inputs):
     elif response.status_code != 200:
         return {"error": f"Airtable API error {response.status_code}: {response.text}"}
 
-    return {"records": response.json().get("records", [])}
+    # Extract records
+    records = response.json().get("records", [])
+
+    # If no records found, return an empty array
+    if not records:
+        return {"message": "No unprocessed records found", "records": []}
+
+    return {"records": records}
