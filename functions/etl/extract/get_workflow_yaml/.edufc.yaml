@@ -1,38 +1,3 @@
 name: get-workflow-yaml
 apiRevision: edurata.io/function/v1
 description: Extracts YAML content from a cloned GitHub workflow file.
-
-interface:
-  inputs:
-    type: object
-    properties:
-      repoCode:
-        type: file
-        description: The path to the cloned repository.
-
-  outputs:
-    properties:
-      workflow_content:
-        type: string
-        description: Extracted YAML content.
-
-runtime: python3_10
-
-packages:
-  PyYAML: ""
-
-code: |
-  import yaml
-
-  def handler(inputs):
-      repo_path = inputs["repoCode"]
-
-      try:
-          with open(repo_path, 'r') as file:
-              yaml_content = file.read()
-              parsed_yaml = yaml.safe_load(yaml_content)
-
-          return {"workflow_content": yaml_content}
-
-      except Exception as e:
-          return {"error": f"Failed to read workflow YAML: {str(e)}"}
