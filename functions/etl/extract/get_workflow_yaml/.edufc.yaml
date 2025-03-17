@@ -19,7 +19,7 @@ interface:
 runtime: python3_10
 
 packages:
-  PyYAML: ""
+  PyYAML: "6.0"
 
 code: |
   import yaml

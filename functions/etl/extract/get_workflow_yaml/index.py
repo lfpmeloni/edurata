@@ -1,7 +1,11 @@
 import yaml
 import os
+import sys
 
 def handler(inputs):
+    print(f"Python Version: {sys.version}")  # Debugging
+    print(f"Checking PyYAML: {yaml.__version__}")  # Debugging
+
     repo_path = inputs.get("repoCode")
 
     if not repo_path:
