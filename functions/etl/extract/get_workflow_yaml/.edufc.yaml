@@ -24,9 +24,16 @@ packages:
 code: |
   import yaml
   import os
+  import sys
 
   def handler(inputs):
-      repo_path = inputs["repoCode"]
+      print(f"Python Version: {sys.version}")  # Debugging
+      print(f"Checking PyYAML: {yaml.__version__}")  # Debugging
+
+      repo_path = inputs.get("repoCode")
+
+      if not repo_path:
+          return {"error": "Missing repoCode input."}
 
       if not os.path.exists(repo_path):
           return {"error": f"File not found: {repo_path}"}
