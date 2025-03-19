@@ -8,15 +8,24 @@ def handler(inputs):
     if not repo_dir or not workflow_path:
         return {"error": "Missing repoCode or workflowPath input."}
 
-    if workflow_path.startswith(repo_dir):
-        full_path = workflow_path
-    else:
-        full_path = os.path.join(repo_dir, workflow_path.lstrip("/"))
+    # Ensure the correct file path
+    full_path = os.path.join(repo_dir, workflow_path.lstrip("/"))
 
-    print(f"Checking for file at: {full_path}")
+    # Debugging: Print all files in the repo directory
+    print(f"📂 Repo directory structure of {repo_dir}:")
+    for root, dirs, files in os.walk(repo_dir):
+        level = root.replace(repo_dir, "").count(os.sep)
+        indent = " " * 4 * level
+        print(f"{indent}📁 {os.path.basename(root)}/")
+        sub_indent = " " * 4 * (level + 1)
+        for file in files:
+            print(f"{sub_indent}📄 {file}")
 
+    print(f"\n🔍 Checking for file at: {full_path}")
+
+    # Verify if the expected file exists
     if not os.path.exists(full_path):
-        return {"error": f"File not found: {full_path}"}
+        return {"error": f"⚠️ File not found: {full_path}"}
 
     try:
         with open(full_path, 'r') as file:
