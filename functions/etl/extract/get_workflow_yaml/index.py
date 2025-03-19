@@ -8,7 +8,10 @@ def handler(inputs):
     if not repo_dir or not workflow_path:
         return {"error": "Missing repoCode or workflowPath input."}
 
-    full_path = os.path.join(repo_dir, workflow_path.lstrip("/"))
+    if workflow_path.startswith(repo_dir):
+        full_path = workflow_path
+    else:
+        full_path = os.path.join(repo_dir, workflow_path.lstrip("/"))
 
     print(f"Checking for file at: {full_path}")
 
