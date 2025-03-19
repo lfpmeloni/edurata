@@ -1,21 +1,22 @@
-import yaml
 import os
-import sys
+import yaml
 
 def handler(inputs):
-    print(f"Python Version: {sys.version}")  # Debugging
-    print(f"Checking PyYAML: {yaml.__version__}")  # Debugging
+    repo_dir = inputs.get("repoCode")
+    workflow_path = inputs.get("workflowPath")
 
-    repo_path = inputs.get("repoCode")
+    if not repo_dir or not workflow_path:
+        return {"error": "Missing repoCode or workflowPath input."}
 
-    if not repo_path:
-        return {"error": "Missing repoCode input."}
+    full_path = os.path.join(repo_dir, workflow_path)
 
-    if not os.path.exists(repo_path):
-        return {"error": f"File not found: {repo_path}"}
+    print(f"Checking for file at: {full_path}")
+
+    if not os.path.exists(full_path):
+        return {"error": f"File not found: {full_path}"}
 
     try:
-        with open(repo_path, 'r') as file:
+        with open(full_path, 'r') as file:
             yaml_content = file.read()
             parsed_yaml = yaml.safe_load(yaml_content)
 

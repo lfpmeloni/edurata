@@ -49,6 +49,7 @@ steps:
       path: functions/etl/extract/get_workflow_yaml
     props:
       repoCode: ${each.repoCode}
+      workflowPath: ${each.fields.workflowPath}
 
   generate-blog-content:
     foreach: ${get-workflow-definition}
