@@ -48,8 +48,7 @@ steps:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
       path: functions/etl/extract/get_workflow_yaml
     props:
-      repoCode: ${clone-git[__eachIndex__].repoCode}
-      workflowPath: ${each.fields.workflowPath}
+      repoCode: ${clone-git[__eachIndex__].repoCode}  
 
   generate-blog-content:
     foreach: ${get-workflow-definition}
