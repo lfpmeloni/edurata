@@ -7,15 +7,18 @@ def handler(inputs):
     if not repo_path:
         return {"error": "Missing repoCode input."}
 
-    print(f"📂 Checking for file at: {repo_path}")
+    # Debugging: Print all files inside the cloned repository
+    print(f"📂 Checking files in: {repo_path}")
 
-    # Debug: List all files in the repo before checking
-    for root, dirs, files in os.walk(os.path.dirname(repo_path)):
-        print(f"📁 {root}/")
-        for file in files:
-            print(f"  📄 {file}")
+    all_files = []
+    for root, dirs, files in os.walk(repo_path):
+        all_files.extend([os.path.join(root, file) for file in files])
 
-    # Check if the file exists
+    print("🗂️ Found files:")
+    for file in all_files:
+        print(f"  📄 {file}")
+
+    # Verify if the expected workflow file exists
     if not os.path.exists(repo_path):
         return {"error": f"⚠️ File not found: {repo_path}"}
 
