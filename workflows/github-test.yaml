@@ -49,7 +49,8 @@ steps:
       path: functions/etl/extract/get_workflow_yaml
     props:
       repoCode: ${clone-git[__eachIndex__].repoCode}
-      workflowPath: ${each.fields.workflowPath}
+      workflowPath: ${clone-git[__eachIndex__].repoCode}/${each.fields.workflowPath}
+
 
   generate-blog-content:
     foreach: ${get-workflow-definition}
