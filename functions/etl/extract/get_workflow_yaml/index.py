@@ -8,10 +8,10 @@ def handler(inputs):
     if not repo_dir or not workflow_path:
         return {"error": "Missing repoCode or workflowPath input."}
 
-    # Ensure the correct file path
-    full_path = os.path.join(repo_dir, workflow_path.lstrip("/"))
+    # Ensure correct file path (avoid double path joining)
+    full_path = os.path.normpath(os.path.join(repo_dir, workflow_path))
 
-    # Debugging: Print all files in the repo directory
+    # Debugging: List all files inside the repo before checking for the file
     print(f"📂 Repo directory structure of {repo_dir}:")
     for root, dirs, files in os.walk(repo_dir):
         level = root.replace(repo_dir, "").count(os.sep)
