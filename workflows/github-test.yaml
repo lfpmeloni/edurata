@@ -42,13 +42,13 @@ steps:
       path: ${each.fields.workflowPath}
 
   get-workflow-definition:
-    foreach: ${clone-git}
+    foreach: ${get-unprocessed-workflows.records}
     description: Extract the workflow YAML content from the cloned repository.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
       path: functions/etl/extract/get_workflow_yaml
     props:
-      repoCode: ${each.repoCode}
+      repoCode: ${clone-git[__eachIndex__].repoCode}
       workflowPath: ${each.fields.workflowPath}
 
   generate-blog-content:
