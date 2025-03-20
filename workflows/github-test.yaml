@@ -1,7 +1,7 @@
 name: github-test
 apiRevision: edurata.io/workflow/v1
 description: |
-  This workflow retrieves unprocessed workflows from an Airtable table, clones the GitHub repository, extracts the workflow YAML, generates blog content, and stores it in an Airtable table.
+  This workflow retrieves unprocessed workflows from an Airtable table, fetches the GitHub YAML workflow file, generates blog content, and stores it in an Airtable table.
 
 interface:
   inputs:
@@ -31,43 +31,34 @@ steps:
       airtable_table_id: ${inputs.github_source_table_id}
       airtable_api_key: ${secrets.AIRTABLE_API_KEY}
 
-  clone-git:
+  fetch-github-yaml:
     foreach: ${get-unprocessed-workflows.records}
-    description: Clone the GitHub repository from the workflow path.
-    source:
-      repoUrl: "https://github.com/Edurata/edurata-functions.git"
-      path: etl/extract/clone-git
-    props:
-      repoUrl: ${each.fields.githubRepoURL}
-      path: ""  # Clone full repo, don't specify subfolder
-
-  get-workflow-definition:
-    foreach: ${get-unprocessed-workflows.records}
-    description: Extract the workflow YAML content from the cloned repository.
+    description: Fetch the workflow YAML file directly from GitHub without cloning.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
-      path: functions/etl/extract/get_workflow_yaml
+      path: functions/etl/extract/fetch_github_yaml
     props:
-      repoCode: ${clone-git[__eachIndex__].repoCode}  
+      github_repo_url: ${each.fields.githubRepoURL}
+      workflow_path: ${each.fields.workflowPath}
 
   generate-blog-content:
-    foreach: ${get-workflow-definition}
+    foreach: ${fetch-github-yaml}
     if:
-      "!!": ${each.workflow_content}
+      "!!": ${each.yaml_content}
     description: Generate structured blog content about the workflow.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
       path: functions/etl/transform/generate_gpt_content
     props:
       openai_api_key: ${secrets.OPENAI_API_KEY}
-      raw_content: ${each.workflow_content}
+      raw_content: ${each.yaml_content}
       model: "gpt-4"
       temperature: 0.7
       messages:
         - role: "system"
           content: "You are an AI that generates professional blog posts from workflow YAML files."
         - role: "user"
-          content: "Generate a blog post describing the following workflow:\n\n${each.workflow_content}"
+          content: "Generate a blog post describing the following workflow:\n\n${each.yaml_content}"
 
   store-blog-post:
     foreach: ${generate-blog-content}
