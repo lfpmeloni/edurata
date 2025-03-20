@@ -41,12 +41,14 @@ steps:
       github_repo_url: ${each.fields.githubRepoURL}
       workflow_path: ${each.fields.workflowPath}
     outputs:
+      yaml_content: ${self.yaml_content}
+      workflow_details: ${self.workflow_details}
       record_id: ${each.id}  # ✅ Pass-through the record_id separately
 
   generate-blog-content:
     foreach: ${fetch-github-yaml}
     outputs:
-      record_id: ${each.record_id}  # ✅ Corrected reference to record_id
+      record_id: ${each.record_id}  # ✅ Ensure this reference works
     if:
       "!!": ${each.yaml_content}
     description: Generate structured blog content about the workflow.
@@ -56,7 +58,7 @@ steps:
     props:
       openai_api_key: ${secrets.OPENAI_API_KEY}
       raw_content: ${each.yaml_content}
-      record_id: ${each.record_id}  # ✅ Corrected reference to record_id
+      record_id: ${each.record_id}  # ✅ Fix reference to record_id
       model: "gpt-4"
       temperature: 0.7
       messages:
@@ -74,7 +76,7 @@ steps:
     props:
       airtable_base_id: ${inputs.workflows_table_id}
       airtable_table_id: ${inputs.github_posts_table_id}
-      record_id: ${each.record_id}  # ✅ Corrected reference to record_id
+      record_id: ${each.record_id}  # ✅ Fix reference to record_id
       generated_content: ${each.generated_content}
       airtable_api_key: ${secrets.AIRTABLE_API_KEY}
 
@@ -87,6 +89,6 @@ steps:
     props:
       airtable_base_id: ${inputs.workflows_table_id}
       airtable_table_id: ${inputs.github_source_table_id}
-      record_id: ${each.record_id}  # ✅ Corrected reference to record_id
+      record_id: ${each.record_id}  # ✅ Fix reference to record_id
       processed: true
       airtable_api_key: ${secrets.AIRTABLE_API_KEY}
