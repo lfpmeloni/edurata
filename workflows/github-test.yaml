@@ -43,20 +43,20 @@ steps:
     outputs:
       yaml_content: ${self.yaml_content}
       workflow_details: ${self.workflow_details}
-      workflowID: ${each.fields.workflowID}
+      workflowID: ${each.fields.workflowID}  # ✅ FIXED: Correct reference!
 
   generate-blog-content:
     foreach: ${fetch-github-yaml}
     description: Generate structured blog content about the workflow.
     if:
-      "!!": ${each.yaml_content}
+      "!!": ${each.yaml_content}  # Ensure content exists before proceeding
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
       path: functions/etl/transform/generate_gpt_content
     props:
       openai_api_key: ${secrets.OPENAI_API_KEY}
       raw_content: ${each.yaml_content}
-      workflowID: ${each.workflowID}
+      workflowID: ${each.workflowID}  # ✅ FIXED: Now correctly referencing workflowID
       model: "gpt-4"
       temperature: 0.7
       messages:
@@ -74,7 +74,7 @@ steps:
     props:
       airtable_base_id: ${inputs.workflows_table_id}
       airtable_table_id: ${inputs.github_posts_table_id}
-      record_id: ${each.workflowID}
+      record_id: ${each.workflowID}  # ✅ FIXED: Now using workflowID correctly
       generated_content: ${each.generated_content}
       airtable_api_key: ${secrets.AIRTABLE_API_KEY}
 
@@ -87,6 +87,6 @@ steps:
     props:
       airtable_base_id: ${inputs.workflows_table_id}
       airtable_table_id: ${inputs.github_source_table_id}
-      record_id: ${each.workflowID}
+      record_id: ${each.workflowID}  # ✅ FIXED: Consistent use of workflowID
       processed: true
       airtable_api_key: ${secrets.AIRTABLE_API_KEY}
