@@ -39,7 +39,7 @@ steps:
       path: etl/extract/clone-git
     props:
       repoUrl: ${each.fields.githubRepoURL}
-      path: ${each.fields.workflowPath}
+      path: ""  # Clone full repo, don't specify subfolder
 
   get-workflow-definition:
     foreach: ${get-unprocessed-workflows.records}
