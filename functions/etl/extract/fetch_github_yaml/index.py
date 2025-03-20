@@ -1,5 +1,14 @@
-import requests
-import yaml
+import sys
+import subprocess
+
+# Ensure dependencies are installed
+try:
+    import requests
+    import yaml
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "requests", "PyYAML"])
+    import requests
+    import yaml
 
 def handler(inputs):
     github_repo_url = inputs.get("github_repo_url")
