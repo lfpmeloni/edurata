@@ -40,7 +40,8 @@ steps:
     props:
       github_repo_url: ${each.fields.githubRepoURL}
       workflow_path: ${each.fields.workflowPath}
-      record_id: ${each.id}  # Pass the record ID
+    outputs:
+      record_id: ${each.id}  # Pass-through the record_id separately
 
   generate-blog-content:
     foreach: ${fetch-github-yaml}
@@ -53,7 +54,7 @@ steps:
     props:
       openai_api_key: ${secrets.OPENAI_API_KEY}
       raw_content: ${each.yaml_content}
-      record_id: ${each.record_id}  # Pass record_id
+      record_id: ${fetch-github-yaml[__eachIndex__].record_id}  # Explicitly reference record_id
       model: "gpt-4"
       temperature: 0.7
       messages:

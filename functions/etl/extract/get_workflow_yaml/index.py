@@ -13,7 +13,6 @@ except ImportError:
 def handler(inputs):
     github_repo_url = inputs.get("github_repo_url")
     workflow_path = inputs.get("workflow_path")
-    record_id = inputs.get("record_id")  # Retrieve record_id from input
 
     if not github_repo_url or not workflow_path:
         return {"error": "Missing GitHub repository URL or workflow path."}
@@ -23,7 +22,7 @@ def handler(inputs):
         parts = github_repo_url.rstrip("/").split("/")
         repo_owner = parts[-2]
         repo_name = parts[-1].replace(".git", "")
-        branch = "main"
+        branch = "main"  # Default branch, modify if needed
 
         # Construct the raw GitHub URL
         raw_url = f"https://raw.githubusercontent.com/{repo_owner}/{repo_name}/{branch}/{workflow_path}"
@@ -33,6 +32,7 @@ def handler(inputs):
     print(f"🔍 Fetching YAML from: {raw_url}")
 
     try:
+        # Fetch YAML content
         response = requests.get(raw_url)
 
         if response.status_code != 200:
@@ -41,6 +41,7 @@ def handler(inputs):
 
         yaml_content = response.text
 
+        # Parse YAML
         try:
             parsed_yaml = yaml.safe_load(yaml_content)
             workflow_details = {
@@ -54,8 +55,7 @@ def handler(inputs):
 
         return {
             "yaml_content": yaml_content,
-            "workflow_details": workflow_details,
-            "record_id": record_id  # Return record_id to next step
+            "workflow_details": workflow_details
         }
 
     except Exception as e:
