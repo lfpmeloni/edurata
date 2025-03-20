@@ -8,12 +8,12 @@ def handler(inputs):
     if not github_repo_url or not workflow_path:
         return {"error": "Missing GitHub repository URL or workflow path."}
 
-    # Extract the repo owner and name from the GitHub URL
     try:
+        # Extract repository owner and name
         parts = github_repo_url.rstrip("/").split("/")
         repo_owner = parts[-2]
         repo_name = parts[-1].replace(".git", "")
-        branch = "main"  # Default to 'main', change if needed
+        branch = "main"  # Default branch, modify if needed
 
         # Construct the raw GitHub URL
         raw_url = f"https://raw.githubusercontent.com/{repo_owner}/{repo_name}/{branch}/{workflow_path}"
@@ -23,7 +23,7 @@ def handler(inputs):
     print(f"🔍 Fetching YAML from: {raw_url}")
 
     try:
-        # Fetch the raw YAML content
+        # Fetch YAML content
         response = requests.get(raw_url)
 
         if response.status_code != 200:
@@ -32,7 +32,7 @@ def handler(inputs):
 
         yaml_content = response.text
 
-        # Parse YAML to extract workflow details
+        # Parse YAML
         try:
             parsed_yaml = yaml.safe_load(yaml_content)
             workflow_details = {
