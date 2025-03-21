@@ -1,30 +1,25 @@
 import openai
 
 def handler(inputs):
-    # Fetch API key
     api_key = inputs.get("openai_api_key")
-    if not api_key:
-        return {"error": "OPENAI_API_KEY is missing. Ensure it's set in Edurata Secrets."}
-
-    # Fetch required inputs
     raw_content = inputs.get("raw_content")
-    record_id = inputs.get("record_id")
-    messages = inputs.get("messages")  # Dynamic message prompt
-    model = inputs.get("model", "gpt-4")  # Default to GPT-4
-    temperature = inputs.get("temperature", 0.7)  # Default temperature
+    messages = inputs.get("messages")
+    model = inputs.get("model", "gpt-4")
+    temperature = inputs.get("temperature", 0.7)
 
+    if not api_key:
+        return {"error": "OPENAI_API_KEY is missing."}
     if not raw_content:
         return {"error": "raw_content is missing."}
-    if not record_id:
-        return {"error": "record_id is missing."}
     if not messages:
         return {"error": "messages array is missing."}
 
+    # Optional: used to carry metadata forward
+    workflow_id = inputs.get("workflow_id")
+
     try:
-        # Initialize OpenAI client
         client = openai.OpenAI(api_key=api_key)
 
-        # Call OpenAI API
         response = client.chat.completions.create(
             model=model,
             messages=messages,
@@ -32,8 +27,8 @@ def handler(inputs):
         )
 
         return {
-            "id": record_id,  # Return ID for mapping
-            "generated_content": response.choices[0].message.content
+            "generated_content": response.choices[0].message.content,
+            "workflow_id": workflow_id  # Pass-through if provided
         }
 
     except openai.OpenAIError as e:
