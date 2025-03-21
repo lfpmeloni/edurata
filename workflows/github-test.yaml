@@ -43,12 +43,13 @@ steps:
     outputs:
       yaml_content: ${self.yaml_content}
       workflow_details: ${self.workflow_details}
+      workflow_id: ${each.fields.workflowID}  # ✅ Use workflowID instead of record_id
 
   generate-blog-content:
     foreach: ${fetch-github-yaml}
     description: Generate structured blog content about the workflow.
     if:
-      "!!": ${each.yaml_content}
+      "!!": ${each.yaml_content}  # Ensure content exists before proceeding
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
       path: functions/etl/transform/generate_gpt_content
@@ -62,27 +63,34 @@ steps:
           content: "You are an AI that generates professional blog posts from workflow YAML files."
         - role: "user"
           content: "Generate a blog post describing the following workflow:\n\n${each.yaml_content}"
+    outputs:
+      generated_content: ${self.generated_content}
+      workflow_id: ${each.workflow_id}
 
   store-blog-post:
     foreach: ${generate-blog-content}
-    description: Store the generated blog content in Airtable.
+    description: Store the generated blog content in Airtable (NEW RECORD).
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
-      path: functions/etl/load/update_airtable_record
+      path: functions/etl/load/create_airtable_record
     props:
       airtable_base_id: ${inputs.workflows_table_id}
       airtable_table_id: ${inputs.github_posts_table_id}
-      generated_content: ${each.generated_content}
+      fields:
+        Workflow ID: ${each.workflow_id}
+        Generated Content: ${each.generated_content}
+        Status: "published"
       airtable_api_key: ${secrets.AIRTABLE_API_KEY}
 
   mark-workflow-as-processed:
     foreach: ${generate-blog-content}
-    description: Mark the workflow as processed after generating blog content.
+    description: Mark the original workflow record as processed.
     source:
       repoUrl: "https://github.com/lfpmeloni/edurata.git"
       path: functions/etl/load/update_airtable_record
     props:
       airtable_base_id: ${inputs.workflows_table_id}
       airtable_table_id: ${inputs.github_source_table_id}
+      record_id: ${each.workflow_id}
       processed: true
       airtable_api_key: ${secrets.AIRTABLE_API_KEY}
